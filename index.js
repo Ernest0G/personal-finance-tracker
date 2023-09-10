@@ -4,6 +4,10 @@ const path = require('path');
 
 const parameters = process.argv.splice(2);
 
+if (parameters.length < 3) {
+    throw new Error('You made less than 3 entries for an expense. Make sure your entries follows the following format: name category cost')
+}
+
 if (parameters.length > 3) {
     throw new Error('You made more than 3 entries for an expense. Make sure your entries follows the following format: name category cost')
 }
@@ -19,18 +23,23 @@ const doesLedgerFileExist = fs.existsSync(ledgerFilePath);
 
 if (doesLedgerFileExist) {
     try {
+        const items = JSON.parse(fs.readFileSync(ledgerFilePath)).items;
+        items.push(item);
+
+        fs.writeFileSync(ledgerFilePath, JSON.stringify({ items }));
+
         console.log('Expense successfully added to ledger.')
     } catch (error) {
-        throw new Error('Could not create ledger file: ' + error.message)
+        throw new Error('Could not write to ledger file: ' + error.message)
     }
 } else {
     try {
         const items = [item]
         fs.writeFileSync(ledgerFilePath, JSON.stringify({ items }))
+
         console.log('Expense successfully added to new ledger.')
     } catch (error) {
         throw new Error('Could not create ledger file: ' + error.message)
     }
-
 }
 
